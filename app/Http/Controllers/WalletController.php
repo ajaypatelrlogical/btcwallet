@@ -65,19 +65,19 @@ class WalletController extends Controller
         
         $wallet = $this->createWalletIfNotExists($user, $name);
         if($wallet) {
-            $addressJson = $this->generateWalletAddress();
-            $responseData = json_decode($addressJson);
-            if($responseData) {
+            $addressJson = $this->generateWalletAddress($user->id);
+            $responseData = $addressJson->getData();
+            if($responseData->status) {
                 $metaArray = [
-                    'phrase_key' => Crypt::encryptString($responseData->phrase_key),
-                    'private_key' => $responseData->private_key,
-                    'public_key' => $responseData->public_key,
-                    'xpub' => $responseData->xpub,
-                    'address' => $responseData->p2pkh_address,
-                    'segwit_address' => $responseData->segwit_address,
-                    'p2pkh_address' => $responseData->p2pkh_address,
-                    'p2sh_address' => $responseData->p2sh_address,
-                    'p2wsh_address' => $responseData->p2wsh_address,
+                    'phrase_key' => Crypt::encryptString($responseData->wallet->phrase_key),
+                    'private_key' => $responseData->wallet->private_key,
+                    'public_key' => $responseData->wallet->public_key,
+                    'xpub' => $responseData->wallet->xpub,
+                    'address' => $responseData->wallet->p2pkh_address,
+                    'segwit_address' => $responseData->wallet->segwit_address,
+                    'p2pkh_address' => $responseData->wallet->p2pkh_address,
+                    'p2sh_address' => $responseData->wallet->p2sh_address,
+                    'p2wsh_address' => $responseData->wallet->p2wsh_address,
                 ];
 
                 Wallet::where("id", $wallet->id)->update([

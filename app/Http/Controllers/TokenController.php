@@ -9,14 +9,6 @@ use App\Traits\HasWalletHelpers;
 
 class TokenController extends Controller
 {
-    // Secret for signing JWT
-    private $jwtSecret;
-
-    public function __construct()
-    {
-        $this->jwtSecret = env('WALLET_JWT_SECRET');
-    }
-
     // Issue new access token + refresh token
     public function getToken(Request $request)
     {

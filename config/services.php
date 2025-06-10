@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'node_api' => [
+        'key' => env('NODE_API_KEY'),
+        'secret' => env('NODE_API_SECRET'),
+        'url' => env('NODE_API_URL'),
+    ],
+
 ];

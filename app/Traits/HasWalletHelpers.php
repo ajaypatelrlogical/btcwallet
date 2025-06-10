@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\User;
+use App\Services\NodeApiService;
 use Bavix\Wallet\Models\Wallet;
 use BitWasp\Bitcoin\Address\PayToPubKeyHashAddress;
 use BitWasp\Bitcoin\Address\ScriptHashAddress;
@@ -44,22 +45,18 @@ trait HasWalletHelpers
     public function generateWalletAddress($userId)
     {
         try {
-            $tokenResponse = $this->getToken($userId);
-            $tokenData = $tokenResponse->getData(true);
-            if (isset($tokenData['error'])) {
-                return response()->json(['error' => 'Token generation failed'], 401);
-            }
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $tokenData['access_token']
-            ])->post('http://localhost:3000/api/wallet/create', [
-                'userId' => $userId
-            ]);
-            
+            $NodeApiService = new NodeApiService();
+            $response = $NodeApiService->get('hello_world');
+      
             if ($response->successful()) {
                 return response()->json([
                     'status' => true,
                     'wallet' => $response->json()
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'error' => $response->json()
                 ]);
             }
         } catch (Exception $e) {
@@ -68,62 +65,6 @@ trait HasWalletHelpers
                 'error' => $e->getMessage()
             ]);
         }
-    }
-
-    public function getToken($userId)
-    {
-        if (!$userId) {
-            return response()->json(['error' => 'userId required'], 400);
-        }
-
-        $accessToken = $this->generateJwt($userId, 300);  // 5 minutes
-        $refreshToken = $this->generateJwt($userId, 86400); // 1 day
-
-        // Save refresh token tied to userId in DB/cache here (optional but recommended)
-        // Cache::put("refresh_token_{$userId}", $refreshToken, 86400);
-
-        return response()->json([
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
-            'expires_in' => 300,
-        ]);
-    }
-
-    public function refreshToken($refreshToken)
-    {
-        if (!$refreshToken) {
-            return response()->json(['error' => 'refresh_token required'], 400);
-        }
-
-        try {
-            $decoded = JWT::decode($refreshToken, new Key(env('WALLET_JWT_SECRET'), 'HS256'));
-            $userId = $decoded->uid;
-
-            // Optionally verify refresh token against saved one in DB/cache here
-
-            $newAccessToken = $this->generateJwt($userId, 300); // new 5 min token
-
-            return response()->json([
-                'access_token' => $newAccessToken,
-                'expires_in' => 300,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Invalid refresh token'], 401);
-        }
-    }
-
-    // Helper to generate JWT
-    private function generateJwt($userId, $ttlSeconds)
-    {
-        $payload = [
-            'iss' => 'laravel-app',
-            'aud' => 'node-api',
-            'iat' => time(),
-            'exp' => time() + $ttlSeconds,
-            'uid' => $userId,
-        ];
-
-        return JWT::encode($payload, env('WALLET_JWT_SECRET'), 'HS256');
     }
     
     public function generateWalletAddressBitwasp()

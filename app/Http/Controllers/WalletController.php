@@ -67,6 +67,7 @@ class WalletController extends Controller
         if($wallet) {
             $addressJson = $this->generateWalletAddress($user->id);
             $responseData = $addressJson->getData();
+            dd($responseData);
             if($responseData->status) {
                 $metaArray = [
                     'phrase_key' => Crypt::encryptString($responseData->wallet->phrase_key),

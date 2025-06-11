@@ -46,7 +46,9 @@ trait HasWalletHelpers
     {
         try {
             $NodeApiService = new NodeApiService();
-            $response = $NodeApiService->get('hello_world');
+            $response = $NodeApiService->post('wallet/create', [
+                "userId" => $userId
+            ]);
       
             if ($response->successful()) {
                 return response()->json([
@@ -147,5 +149,30 @@ trait HasWalletHelpers
         $returnData['p2wsh_address'] = $p2wshAddress;
 
         return json_encode($returnData);
+    }
+
+    public function generateAddressFromXpub($data) {
+
+        try {
+            $NodeApiService = new NodeApiService();
+            $response = $NodeApiService->post('common/create-btc-address-xpub', $data);
+      
+            if ($response->successful()) {
+                return response()->json([
+                    'status' => true,
+                    'wallet' => $response->json()
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'error' => $response->json()
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

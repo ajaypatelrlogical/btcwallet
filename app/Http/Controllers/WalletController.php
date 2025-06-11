@@ -59,6 +59,13 @@ class WalletController extends Controller
      */
     public function store(Request $request)
     {
+        $response = $this->generateAddressFromXpub([
+            "xpub" => "tpubDFtzscUjwYV5CMxmhyJ9y3j2Azfs23hQximc7byiH8JSJUDRVonG4NN2W9PVwzBARMQ7eztptM4agwRSfuixeVszfBqjqjTakn6p1SwsjY1",
+            "index" => 1
+        ]);
+        $responseData = $response->getData();
+        dd($responseData);
+
         $user = User::find(Auth::id());
 
         $name = $request->name;
@@ -73,7 +80,9 @@ class WalletController extends Controller
                     'phrase_key' => Crypt::encryptString($responseData->wallet->phrase_key),
                     'private_key' => $responseData->wallet->private_key,
                     'public_key' => $responseData->wallet->public_key,
-                    'xpub' => $responseData->wallet->xpub,
+                    'xpub_legacy' => $responseData->wallet->xpub_legacy,
+                    'xpub_segwit' => $responseData->wallet->xpub_segwit,
+                    'xpub_native' => $responseData->wallet->xpub_native,
                     'address' => $responseData->wallet->p2pkh_address,
                     'segwit_address' => $responseData->wallet->segwit_address,
                     'p2pkh_address' => $responseData->wallet->p2pkh_address,
